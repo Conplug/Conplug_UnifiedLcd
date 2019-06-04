@@ -1,3 +1,17 @@
+//
+// Copyright (c) 2019 Conplug (https://conplug.com.tw)
+// Author: Hartman Hsieh
+//
+// Description :
+//   According to IIC address to initialize different library .
+//
+// Connections :
+//   Connect LCD module to Arduino's IIC bus.
+//
+// Required Library :
+//   https://github.com/bearwaterfall/DFRobot_LCD-master
+//   https://github.com/fdebrabander/Arduino-LiquidCrystal-I2C-library
+//
 
 
 #include <Arduino.h>
