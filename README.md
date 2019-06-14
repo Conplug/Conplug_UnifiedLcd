@@ -1,1 +1,1 @@
-# Conplug_UnifiedLcd
+Detect DFRobot LCD and other IIC LCD modules automatically.
