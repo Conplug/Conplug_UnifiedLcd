@@ -3,10 +3,10 @@
 // Author: Hartman Hsieh
 //
 // Description :
-//   According to IIC address to initialize different library .
+//   IIC address detects automatically.
 //
 // Connections :
-//   Connect LCD module to Arduino's IIC bus.
+//   LCD Module => IIC
 //
 // Required Library :
 //   https://github.com/bearwaterfall/DFRobot_LCD-master
@@ -25,34 +25,48 @@
 
 Conplug_UnifiedLcd::Conplug_UnifiedLcd(uint8_t lcd_cols, uint8_t lcd_rows)
 {
+    Conplug_UnifiedLcd::Col = lcd_cols;
+    Conplug_UnifiedLcd::Row = lcd_rows;
+}
+
+void Conplug_UnifiedLcd::init()
+{
+    int iic_addr = 0;
+
     Wire.begin();
-    //delay(100);
+
+    //
+    // Scan the IIC address.
+    //
     Wire.beginTransmission((0x7c>>1)); // Address - (0x7c>>1) is DFRobot LCD's.
     uint8_t data8 = Wire.endTransmission();
     if (data8 == 0) {
         LcdLibType = LCD_LIB_TYPE_DFROBOT;
-        DfrobotLcd = new DFRobot_LCD(16, 2);
+        Conplug_UnifiedLcd::Col = 16;
+        Conplug_UnifiedLcd::Row = 2;
+        iic_addr = (0x7c>>1);
+        
     }
     else {
         LcdLibType = LCD_LIB_TYPE_COMMON;
         //
         // Scan Lcd IIC address in table - TryLcdAddress.
         //
-        for(int i = 0; i < sizeof(TryLcdAddress); i++) {
+        for(int i = 0; i < (sizeof(TryLcdAddress) / sizeof(int)); i++) {
             Wire.beginTransmission(TryLcdAddress[i]);
             data8 = Wire.endTransmission();
             if (data8 == 0) {
-                CommonLcd = new LiquidCrystal_I2C(TryLcdAddress[i], 16, 2);
+                iic_addr = TryLcdAddress[i];
                 break;
             }
         }
     }
-}
 
-
-void Conplug_UnifiedLcd::init()
-{
+    //
+    // Create the LCD instance and init it.
+    //
     if(LcdLibType == LCD_LIB_TYPE_DFROBOT) {
+        DfrobotLcd = new DFRobot_LCD(16, 2);
         if(DfrobotLcd != 0) {
             DfrobotLcd->init();
             //delay(100);
@@ -60,6 +74,7 @@ void Conplug_UnifiedLcd::init()
         }
     }
     else if(LcdLibType == LCD_LIB_TYPE_COMMON) {
+        CommonLcd = new LiquidCrystal_I2C(iic_addr, Conplug_UnifiedLcd::Col, Conplug_UnifiedLcd::Row);
         if(CommonLcd != 0) {
             CommonLcd->begin();
             CommonLcd->backlight();
@@ -93,4 +108,38 @@ void Conplug_UnifiedLcd::setCursor(uint8_t col, uint8_t row)
             CommonLcd->setCursor(col, row);
         }
     }
+}
+
+void Conplug_UnifiedLcd::setRGB(uint8_t r, uint8_t g, uint8_t b)
+{
+    if(LcdLibType == LCD_LIB_TYPE_DFROBOT) {
+        if(DfrobotLcd != 0) {
+            DfrobotLcd->setRGB(r, g, b);
+        }
+    }
+}
+
+void Conplug_UnifiedLcd::printSpace(int count)
+{
+    char* str = new char[Conplug_UnifiedLcd::Col + 1];
+    int new_count = count;
+    
+    if(count > Conplug_UnifiedLcd::Col)
+        new_count = Conplug_UnifiedLcd::Col;
+
+    memset(&(str[0]), ' ', new_count);
+    str[new_count] = '\0';
+
+    if(LcdLibType == LCD_LIB_TYPE_DFROBOT) {
+        if(DfrobotLcd != 0) {
+            DfrobotLcd->print(str);
+        }
+    }
+    else if(LcdLibType == LCD_LIB_TYPE_COMMON) {
+        if(CommonLcd != 0) {
+            CommonLcd->print(str);
+        }
+    }
+
+    delete [] str;
 }
