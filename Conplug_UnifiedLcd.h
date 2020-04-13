@@ -3,16 +3,15 @@
 // Author: Hartman Hsieh
 //
 // Description :
-//   According to IIC address to initialize different library .
+//   IIC address detects automatically.
 //
 // Connections :
-//   Connect LCD module to Arduino's IIC bus.
+//   LCD Module => IIC
 //
 // Required Library :
 //   https://github.com/bearwaterfall/DFRobot_LCD-master
 //   https://github.com/fdebrabander/Arduino-LiquidCrystal-I2C-library
 //
-
 
 #ifndef __CONPLUG_UNIFIEDLCD_H__
 #define __CONPLUG_UNIFIEDLCD_H__
@@ -36,8 +35,12 @@ public:
     void init();
     virtual size_t write(uint8_t);
     void setCursor(uint8_t, uint8_t);
+    void setRGB(uint8_t r, uint8_t g, uint8_t b); // Set backlight color
+    void printSpace(int count);
 
 private:
+    int Col = 16;
+    int Row = 2;
     DFRobot_LCD* DfrobotLcd = 0;
     LiquidCrystal_I2C* CommonLcd = 0;
     int LcdLibType = LCD_LIB_TYPE_DFROBOT;
